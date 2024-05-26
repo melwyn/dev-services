@@ -1,0 +1,70 @@
+version: "3.8"
+
+name: dev-services
+
+services:
+  nginx:
+    image: nginx:1.23
+    volumes:
+      - "./etc/nginx/proxy.conf:/etc/nginx/proxy.conf:ro"
+      - "./etc/nginx/sites.conf:/etc/nginx/conf.d/sites.conf:ro"
+    ports:
+      - "80:80"
+
+  postgres:
+    image: postgres:13.10
+    ports:
+      - "5432:5432"
+    environment:
+      - "POSTGRES_USER=postgres"
+      - "POSTGRES_PASSWORD=dummy"
+    volumes:
+      - "./etc/postgres/init-db-creation.sh:/docker-entrypoint-initdb.d/init-db-creation.sh:ro"
+      - "postgres-data:/var/lib/postgresql"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  keycloak-iam:
+    build:
+      context: Docker/keycloak
+    environment:
+      - "KEYCLOAK_ADMIN=kc-admin"
+      - "KEYCLOAK_ADMIN_PASSWORD=kc-admin"
+      - "KC_HOSTNAME=keycloak-iam.mixer-lab.localhost"
+      - "KC_HTTP_PORT=80"
+      - "KC_HTTP_RELATIVE_PATH=/auth"
+
+      - "APPLICATION_NAME=keycloak-iam"
+      - "KC_REALM=mixer-lab"
+      - "KC_SECURITY_TOKEN_HOST=http://127.0.0.1"
+
+      - "KC_DB=postgres"
+      - "KC_DB_URL_HOST=postgres"
+      - "KC_DB_URL_PORT=5432"
+      - "KC_DB_URL_DATABASE=keycloak-iam"
+      - "KC_DB_USERNAME=postgres"
+      - "KC_DB_PASSWORD=dummy"
+      #- "KC_DB_URL=jdbc:postgres://postgres:dummy@localhost:5432"
+
+  mailcatcher:
+    image: schickling/mailcatcher
+
+  mixer-lab-v1:
+    build:
+      context: Docker/ruby
+    environment:
+      - "APPLICATION_NAME=mixer-lab"
+    env_file:
+      - .env
+      - .env.global
+    volumes:
+      - "$HOME/Code//projects/code/ruby/test_projects/mixer-api:/var/www/rails"
+    command: [ "web" ]
+    depends_on:
+      - keycloak-iam
+
+volumes:
+  postgres-data:

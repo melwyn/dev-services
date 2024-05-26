@@ -27,6 +27,13 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    ports:
+      - "15672:15672"
+    volumes:
+      - "rabbitmq-data:/var/lib/rabbitmq"
+
   keycloak-iam:
     build:
       context: Docker/keycloak
@@ -59,7 +66,6 @@ services:
       - "APPLICATION_NAME=mixer-lab"
     env_file:
       - .env
-      - .env.global
     volumes:
       - "$HOME/Code//projects/code/ruby/test_projects/mixer-api:/var/www/rails"
     command: [ "web" ]
@@ -68,3 +74,4 @@ services:
 
 volumes:
   postgres-data:
+  rabbitmq-data:

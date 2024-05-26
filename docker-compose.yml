@@ -40,7 +40,7 @@ services:
     environment:
       - "KEYCLOAK_ADMIN=kc-admin"
       - "KEYCLOAK_ADMIN_PASSWORD=kc-admin"
-      - "KC_HOSTNAME=keycloak-iam.mixer-lab.localhost"
+      - "KC_HOSTNAME=iam.mixer-lab.localhost"
       - "KC_HTTP_PORT=80"
       - "KC_HTTP_RELATIVE_PATH=/auth"
 
@@ -51,7 +51,7 @@ services:
       - "KC_DB=postgres"
       - "KC_DB_URL_HOST=postgres"
       - "KC_DB_URL_PORT=5432"
-      - "KC_DB_URL_DATABASE=keycloak-iam"
+      - "KC_DB_URL_DATABASE=keycloak_iam"
       - "KC_DB_USERNAME=postgres"
       - "KC_DB_PASSWORD=dummy"
       #- "KC_DB_URL=jdbc:postgres://postgres:dummy@localhost:5432"
@@ -67,7 +67,7 @@ services:
     env_file:
       - .env
     volumes:
-      - "$HOME/Code//projects/code/ruby/test_projects/mixer-api:/var/www/rails"
+      - "$HOME/projects/code/ruby/test_projects/mixer-api:/var/www/rails"
     command: [ "web" ]
     depends_on:
       - keycloak-iam
